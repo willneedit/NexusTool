@@ -81,7 +81,7 @@ public class Nexus
         bool? touched = null;
 
         DateTime expiry = DateTime.UtcNow + TimeSpan.FromSeconds(timeoutsecs);
-        while (DateTime.UtcNow < expiry)
+        while (DateTime.UtcNow < expiry || touched == true) 
         {
             int X = -1;
 
