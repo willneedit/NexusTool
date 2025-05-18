@@ -10,5 +10,6 @@
   <ItemGroup>
     <PackageReference Include="HidApi.Net" Version="1.1.0" />
     <PackageReference Include="Mono.Options" Version="6.12.0.148" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.6.0" />
   </ItemGroup>
 </Project>

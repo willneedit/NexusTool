@@ -130,10 +130,57 @@ public class Nexus
                 Console.WriteLine("->"); // Swipe right
             else if (diff < -200)
                 Console.WriteLine("<-"); // Swipe left
-            else if(diff < -50 || diff > 50)
+            else if (diff < -50 || diff > 50)
                 Console.WriteLine($"+- {first}"); // Jittery touch (too short to swipe, but too far to touch a specific icon)
             else
                 Console.WriteLine($"++ {first}"); // Stationary touch
         }
     }
+
+    public void ShowImage(string name)
+    {
+        List<byte[]> images = RawImage.LoadRawImages(name, 1);
+
+        byte[] image = images.First();
+
+        UploadImage(image);
+    }
+
+    private void UploadImage(byte[] image)
+    {
+        byte[] loadBuffer = new byte[1024];
+
+        loadBuffer[0] = 0x02; // Endpoint 2
+        loadBuffer[1] = 0x05; // Command
+        loadBuffer[2] = 0x40;
+        loadBuffer[3] = 0x00; // 1 - last block
+        loadBuffer[4] = 0x00; // Block Number Lo
+        loadBuffer[5] = 0x00; // Block Number Hi (? Alwas 0)
+        loadBuffer[6] = 0x00; // Payload length Lo (in bytes)
+        loadBuffer[7] = 0x00; // Payload length Hi
+
+        int remaining = image.Length;
+        int offset = 0;
+        int blockno = 0;
+
+        while (remaining > 0)
+        {
+            int packlen = (remaining > 1016) ? 1016 : remaining; // 1024 - 8 bytes header len
+
+            Buffer.BlockCopy(image, offset, loadBuffer, 8, packlen);
+
+            loadBuffer[4] = (byte)blockno;
+            loadBuffer[6] = (byte)(packlen & 0xff);
+            loadBuffer[7] = (byte)(packlen >> 8);
+
+            remaining -= packlen;
+            offset += packlen;
+            blockno++;
+
+            loadBuffer[3] = (byte)((remaining == 0) ? 1 : 0);
+
+            _device.Write(loadBuffer);
+        }
+    }
+
 }

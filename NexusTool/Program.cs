@@ -15,7 +15,7 @@ public class Program
     private static bool _stopanim;
     private static bool _blankscreen;
     private static int? _touch = null;
-
+    private static string? _image = null;
 
     private static List<string> Extra = [];
 
@@ -64,6 +64,8 @@ public class Program
         if (_blankscreen) nexus.BlankScreen();
 
         if (_touch != null) nexus.WaitForTouch(_touch.Value);
+
+        if (_image != null) nexus.ShowImage(_image);
     }
 
     private static void ParseCommandlineOptions(string[] args)
@@ -71,13 +73,14 @@ public class Program
         OptionSet options = new()
         {
             { "q|quiet", "No output, except payload data", q => Quiet = q != null },
-            { "i|info", "Show device information", i => _info = i != null },
+            { "I|info", "Show device information", i => _info = i != null },
             { "b|brightness=", "Set brightness (0-100)", (int b) => _brightness = b},
             { "l|loop", "Play animation as a loop", l => _loop = l != null },
             { "p|playanim=", "Play embedded animation (1-3)", (int a) => _animation = a },
             { "s|stopanim", "Stop embedded animation", s => _stopanim = s != null },
             { "c|clearscreen", "Clears the screen", c => _blankscreen = c != null },
-            { "t|touch=", "Wait for seconds for a touch/swipe", (int t) => _touch = t },
+            { "t|touch=", "Wait for seconds for a touch/swipe, then report", (int t) => _touch = t },
+            { "i|image=", "Load and show an image (640x48 recommended)", (string i) => _image = i },
             { "h|help", "This text :)", h => _showHelp = h != null }
         };
 
