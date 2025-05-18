@@ -1,0 +1,1 @@
+SUBSYSTEMS=="usb|hidraw", ATTRS{idVendor}=="1b1c", ATTRS{idProduct}=="1b8e", TAG+="uaccess", TAG+="Corsair_iCUE_Nexus"
