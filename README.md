@@ -1,6 +1,6 @@
 # Nexus Tool
 
-Lightweight tool for managing the iCUE Nexus companion toughscreen display
+Lightweight tool for managing the iCUE Nexus companion touchscreen display
 
 ## Introduction
 
