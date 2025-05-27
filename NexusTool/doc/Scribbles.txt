@@ -1,0 +1,139 @@
+2.2.x - Tastatur
+
+2.1.x - Nexus
+
+GET DESCRIPTOR STRING...
+	1 - Manufacturer
+	2 - Product
+	3 - Serial No.
+
+GET REPORT 
+	(Feature, ID 12) (0c03) - ???
+	(Feature, ID  5) (0503) - Firmware version: "2.2.6.0 "
+
+	
+2.1.0 - Set Configuration, Get Descriptor (Value: 1, Index: 0, Length: 0)
+
+Alle Set_report: reportID: 3, reportType: 3
+
+Alle 001b-0023: HID header 
+		00 - Control transfer stage: Setup
+		21 - bmRequestType: Host-to-device, Class, Interface
+		09 - bRequest: SET_REPORT (9)
+		03 - bReportId: 3
+		03 - bReportType: Feature (3)
+		00 00 - wIndex: 0
+		20 00 - wLength: 32
+
+Ab 0024 ....
+
+On Startup:
+set_report 
+0000  03 0f 01 00 00 00 00 00  00 00 00 00 00 00 00 00   ········ ········
+0010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ········ ········
+
+set_report
+0000  03 10 01 00 00 00 00 00  00 00 00 00 00 00 00 00   ········ ········
+0010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ········ ········
+
+set_report (Set Backlight to custom)
+0000  03 01 40 dd 83 1c 32 2e  32 2e 36 2e 30 20 00 00   ··@···2. 2.6.0 ··
+0010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00   ········ ········
+
+On Shutdown:
+set_report 
+0000  03 0d 01 01 78 00 c0 03  00 00 00 ff 00 00 00 ff   ····x··· ········
+0010  00 00 00 ff 00 00 00 ff  00 00 00 ff 00 00 00 ff   ········ ········
+
+set_report (Set Backlight to default state)
+0000  03 01 64 01 78 00 c0 03  00 00 00 ff 00 00 00 ff   ··d·x··· ········
+0010  00 00 00 ff 00 00 00 ff  00 00 00 ff 00 00 00 ff   ········ ········
+
+On Blank:
+set_report
+0000  03 04 00 00 00 00 c0 03  00 00 00 ff 00 00 00 ff   ········ ········
+0010  00 00 00 ff 00 00 00 ff  00 00 00 ff 00 00 00 ff   ········ ········
+
+set_report (Set Backlight to off)
+0000  03 01 00 00 00 00 c0 03  00 00 00 ff 00 00 00 ff   ········ ········
+0010  00 00 00 ff 00 00 00 ff  00 00 00 ff 00 00 00 ff   ········ ········
+
+On Unblank:
+set_report (Set Backlight to custom)
+0000  03 01 40 00 00 00 c0 03  00 00 00 ff 00 00 00 ff   ··@····· ········
+0010  00 00 00 ff 00 00 00 ff  00 00 00 ff 00 00 00 ff   ········ ········
+
+2.1.1 - Touch Response (0x21b - 0x1b Bytes Header + 0x200 Bytes Datenpuffer)
+
+0000   xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx ; ab 001b: data
+													   ; 001b-001f 01 02 21 00 00
+0010   xx xx xx xx xx xx xx xx xx xx xx 01 02 21 00 00
+0020   01 4a 02 4a 02 00 00 00 00 00 00 00 00 00 00 00 ; 0020: 01 - Touch, 00 - Release
+													   ; 0021-0022 X
+													   ; 0023-0024 X (sollte Y sein..)
+0030   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  ....
+0200   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0210   00 00 00 00 00 00 00 00 00 00 00
+
+
+2.1.2 - Bild-Upload (0x41b - 0x1b Bytes Header + 0x400 Bytes Datenpuffer)
+
+0000   xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx ; ab 001b: data
+													   ; 001b-001d 02 05 40
+0010   xx xx xx xx xx xx xx xx xx xx xx 02 05 40 01 78 ; 001e - 1: letzter Block, 0: nicht
+													   ; 001f - 78: 0-78 - laufender Nummer
+													   ; 0020 00 (Vielleicht Hi-Byte für lfd. Nummer)
+0020   00 c0 03 00 00 00 ff 00 00 00 ff 00 00 00 ff 00 ; 0021-0022: Länge der Nutzdaten (0x3f8 / 0x3c0)
+0030   00 00 ff 00 00 00 ff 00 00 00 ff 00 00 00 ff 00 ; ab 0023: RGBA32
+0040   00 00 ff 00 00 00 ff 00 00 00 ff 00 00 00 ff 00
+  ....
+0400   00 00 ff 00 00 00 ff 00 00 00 ff 00 00 00 ff 00
+0410   00 00 ff 00 00 00 ff 00 00 00 ff
+
+640x48x4 (w*h*bits) = 640 * 48 * RGBA32 = 122880 Bytes
+
+Paket 0 - 0x77: 0x3f8 Bytes Nutzdaten = 121920 Bytes
+Paket 0x78    : 0x3c0 Bytes Nutzdaten =    960 Bytes
+Gesamt									122880 Bytes
+
+001b ist immer gleich Endpoint (0 - Konfig/Helligkeit, 1 - Touch, 2 - Bildupload)
+001c-0024 auf EP 0 ist HID header, sonst Nutzdaten
+
+--usagePage, --usage, Interface Number, Verwendung
+	12			1		0				Betrieb (Bildupload, Touch, ...)
+	 1			6		1				Firmware upload (???)
+
+--send_feature...
+
+03 01 xx -- Brightness
+	  64 - Default unloaded (?)
+	  40 - ++
+	  10 - +
+	  04 - -
+	  01 - --
+	  00 - Off
+
+03 04 -- Blank screen
+
+03 0d yy xx -- Play animation
+	  01 - HW default
+	  02 - iCUE	promo
+	  03 - iCUE download button
+	     00 - Play once
+	     01 - Play loop
+
+03 0f -- Stop animation
+
+03 10 01 -- ???
+
+--read-input-report...
+	5 - ??? + Firmware version
+
+--read-input-forever
+	Touch responses
+
+--l 1024 --send-output
+	02 xx xx xx ... Image data (8 Bytes Header + 254 RGBA32 Daten)
+
+
